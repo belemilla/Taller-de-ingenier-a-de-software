@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Historial de {{ animal.codigo_unico }}{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h1 class="mb-0">Historial Médico</h1>
+        <p class="lead text-muted">Animal: {{ animal.codigo_unico }} ({{ animal.nombre or 'Sin nombre' }})</p>
+    </div>
+    <a href="{{ url_for('add_tratamiento', animal_id=animal.id) }}" class="btn btn-success">Añadir Tratamiento</a>
+</div>
+
+<table class="table table-striped">
+    <thead class="table-dark">
+        <tr>
+            <th>Fecha de Aplicación</th>
+            <th>Nombre del Tratamiento</th>
+            <th>Descripción / Dosis</th>
+            <th class="text-end">Acciones</th> </tr>
+    </thead>
+    <tbody>
+        {% for tratamiento in animal.tratamientos | sort(attribute='fecha_aplicacion', reverse=True) %}
+        <tr>
+            <td>{{ tratamiento.fecha_aplicacion.strftime('%d-%m-%Y') }}</td>
+            <td>{{ tratamiento.nombre_tratamiento }}</td>
+            <td>{{ tratamiento.descripcion or 'N/A' }}</td>
+            <td class="text-end">
+                <a href="{{ url_for('edit_tratamiento', tratamiento_id=tratamiento.id) }}" class="btn btn-sm btn-warning">Editar</a>
+                <a href="{{ url_for('delete_tratamiento', tratamiento_id=tratamiento.id) }}" class="btn btn-sm btn-danger" onclick="return confirm('¿Seguro que quieres borrar este registro?');">Borrar</a>
+            </td>
+        </tr>
+        {% else %}
+        <tr>
+            <td colspan="4" class="text-center">Este animal no tiene tratamientos registrados.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+<a href="{{ url_for('gestionar_animales') }}" class="btn btn-secondary mt-3">Volver a la lista</a>
+{% endblock %}
