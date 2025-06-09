@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}Reportes de Conteos{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="mb-0">Historial de Conteos</h1>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Fecha y Hora (UTC)</th>
+                        <th>Cuidador</th>
+                        <th>Esperados</th>
+                        <th>Contados</th>
+                        <th>Discrepancia</th>
+                        <th>Alerta / Mensaje</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for conteo in conteos %}
+                        <tr class="{{ 'table-danger' if conteo.alerta else '' }}">
+                            <td>{{ conteo.fecha_hora.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                            <td>{{ conteo.cuidador.username }}</td>
+                            <td>{{ conteo.animales_esperados }}</td>
+                            <td>{{ conteo.animales_contados }}</td>
+                            <td>
+                                {% set discrepancia = conteo.animales_contados - conteo.animales_esperados %}
+                                <span class="badge {{ 'bg-danger' if discrepancia < 0 else 'bg-success' }}">
+                                    {{ '%+d' % discrepancia }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if conteo.alerta %}
+                                    {{ conteo.alerta.mensaje }}
+                                {% else %}
+                                    <span class="text-muted">Sin novedad</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="6" class="text-center">No hay conteos registrados todavía.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

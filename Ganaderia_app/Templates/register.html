@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Registro - Ganadería I&E</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f0f2f5; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .login-container { background-color: white; padding: 40px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 300px; text-align: center; }
+        .login-container h2 { margin-bottom: 24px; color: #333; }
+        .login-container input, .login-container select, .login-container button { width: 100%; padding: 12px; margin-bottom: 16px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
+        .login-container button { background-color: #28a745; color: white; border: none; cursor: pointer; font-size: 16px; }
+        .login-container .links { margin-top: 16px; font-size: 14px; }
+        .login-container .links a { color: #007bff; text-decoration: none; }
+        .alert-warning { padding: 10px; margin-bottom: 15px; border-radius: 4px; background-color: #fff3cd; color: #856404; }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <h2>Crear Cuenta</h2>
+         {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <form action="{{ url_for('register') }}" method="post">
+            <input type="text" id="username" name="username" placeholder="Nombre de Usuario" required>
+            <input type="password" id="password" name="password" placeholder="Contraseña" required>
+            <select name="rol" required>
+                <option value="" disabled selected>Selecciona un rol...</option>
+                <option value="Administrador">Administrador</option>
+                <option value="Cuidador">Cuidador</option>
+            </select>
+            <button type="submit">Registrarse</button>
+        </form>
+        <div class="links">
+            <p>¿Ya tienes cuenta? <a href="{{ url_for('login') }}">Inicia sesión</a></p>
+        </div>
+    </div>
+</body>
+</html>
