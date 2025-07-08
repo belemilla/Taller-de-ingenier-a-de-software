@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Editar Proveedor{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header"><h3>Editando Proveedor</h3></div>
+            <div class="card-body">
+                <form method="post">
+                    <div class="mb-3">
+                        <label for="nombre" class="form-label">Nombre</label>
+                        <input type="text" name="nombre" class="form-control" value="{{ proveedor.nombre }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="contacto" class="form-label">Contacto</label>
+                        <input type="text" name="contacto" class="form-control" value="{{ proveedor.contacto or '' }}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="telefono" class="form-label">Teléfono</label>
+                        <input type="text" name="telefono" class="form-control" value="{{ proveedor.telefono or '' }}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="direccion" class="form-label">Dirección</label>
+                        <input type="text" name="direccion" class="form-control" value="{{ proveedor.direccion or '' }}">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Actualizar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
