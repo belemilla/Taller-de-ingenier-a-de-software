@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Añadir Equipo{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header"><h3>Añadir Nuevo Equipo</h3></div>
+            <div class="card-body">
+                <form method="post">
+                    <div class="mb-3">
+                        <label for="nombre" class="form-label">Nombre del Equipo</label>
+                        <input type="text" name="nombre" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="estado" class="form-label">Estado</label>
+                        <select name="estado" class="form-select">
+                            <option value="Operativo">Operativo</option>
+                            <option value="En mantenimiento">En mantenimiento</option>
+                            <option value="Roto">Roto</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="fecha_adquisicion" class="form-label">Fecha de Adquisición</label>
+                        <input type="date" name="fecha_adquisicion" class="form-control">
+                    </div>
+                    <div class="mb-3">
+                        <label for="proximo_mantenimiento" class="form-label">Próximo Mantenimiento</label>
+                        <input type="date" name="proximo_mantenimiento" class="form-control">
+                    </div>
+                    <button type="submit" class="btn btn-success">Guardar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
