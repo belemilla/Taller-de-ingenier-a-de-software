@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Editar Equipo{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header"><h3>Editando Equipo: {{ equipo.nombre }}</h3></div>
+            <div class="card-body">
+                <form method="post">
+                    <div class="mb-3">
+                        <label for="nombre" class="form-label">Nombre del Equipo</label>
+                        <input type="text" name="nombre" class="form-control" value="{{ equipo.nombre }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="estado" class="form-label">Estado</label>
+                        <select name="estado" class="form-select">
+                            <option value="Operativo" {% if equipo.estado == 'Operativo' %}selected{% endif %}>Operativo</option>
+                            <option value="En mantenimiento" {% if equipo.estado == 'En mantenimiento' %}selected{% endif %}>En mantenimiento</option>
+                            <option value="Roto" {% if equipo.estado == 'Roto' %}selected{% endif %}>Roto</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="fecha_adquisicion" class="form-label">Fecha de Adquisición</label>
+                        <input type="date" name="fecha_adquisicion" class="form-control" value="{{ equipo.fecha_adquisicion.strftime('%Y-%m-%d') if equipo.fecha_adquisicion else '' }}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="proximo_mantenimiento" class="form-label">Próximo Mantenimiento</label>
+                        <input type="date" name="proximo_mantenimiento" class="form-control" value="{{ equipo.proximo_mantenimiento.strftime('%Y-%m-%d') if equipo.proximo_mantenimiento else '' }}">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Actualizar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
