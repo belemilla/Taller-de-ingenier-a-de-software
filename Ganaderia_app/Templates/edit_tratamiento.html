@@ -10,8 +10,8 @@
             <div class="card-body">
                 <form method="post">
                     <div class="mb-3">
-                        <label for="fecha_aplicacion" class="form-label">Fecha de Aplicación</label>
-                        <input type="date" name="fecha_aplicacion" class="form-control" value="{{ tratamiento.fecha_aplicacion.strftime('%Y-%m-%d') }}" required>
+                        <label for="fecha_aplicacion" class="form-label">Fecha de Aplicación (DD-MM-YYYY)</label>
+                        <input type="text" name="fecha_aplicacion" class="form-control" value="{{ tratamiento.fecha_aplicacion.strftime('%d-%m-%Y') }}" required>
                     </div>
                     <div class="mb-3">
                         <label for="nombre_tratamiento" class="form-label">Nombre Tratamiento / Vacuna</label>
