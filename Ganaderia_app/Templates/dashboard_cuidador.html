@@ -7,6 +7,17 @@
     <h1 class="display-5 fw-bold">Dashboard del Cuidador</h1>
     <div class="col-lg-6 mx-auto">
         <p class="lead mb-4">Bienvenido, <strong>{{ session.username }}</strong>. Desde aquí puedes iniciar tus tareas diarias.</p>
+
+        {% if ultimo_conteo %}
+        <div class="alert alert-info">
+            Último conteo realizado: <strong>{{ ultimo_conteo.fecha_hora.strftime('%d-%m-%Y a las %H:%M:%S') }} UTC</strong>
+        </div>
+        {% else %}
+        <div class="alert alert-warning">
+            Aún no has realizado ningún conteo.
+        </div>
+        {% endif %}
+
         <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
             <a href="{{ url_for('iniciar_conteo') }}" class="btn btn-success btn-lg px-4 gap-3">Iniciar Conteo de Animales</a>
         </div>
