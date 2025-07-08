@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>{% block title %}Ganadería TYE{% endblock %}</title>
+    
+    <style>
+        body { 
+            background-color: #f8f9fa; 
+        }
+
+        /* --- INICIO: PALETA DE COLORES PERSONALIZADA PARA GANADERÍA TYE --- */
+        
+        /* 1. Color Primario (Verde) */
+        .bg-primary {
+            background-color: #2E8B57 !important; 
+        }
+        .btn-primary {
+            background-color: #2E8B57 !important;
+            border-color: #2E8B57 !important;
+        }
+        .btn-primary:hover {
+            background-color: #246B45 !important;
+            border-color: #246B45 !important;
+        }
+        .text-primary {
+            color: #2E8B57 !important;
+        }
+
+        /* --- INICIO DEL CAMBIO --- */
+        /* 2. Color Secundario (Tono Tierra / Marrón Arena) */
+        .btn-secondary {
+            background-color: #A07855 !important; /* Color tierra */
+            border-color: #A07855 !important;
+            color: white !important;
+        }
+        .btn-secondary:hover {
+            background-color: #826145 !important; /* Tono más oscuro */
+            border-color: #826145 !important;
+        }
+        /* --- FIN DEL CAMBIO --- */
+
+        /* 3. Color de Peligro (Rojo) */
+        .btn-danger {
+            background-color: #dc3545 !important;
+            border-color: #dc3545 !important;
+        }
+        .btn-danger:hover {
+            background-color: #b02a37 !important;
+            border-color: #b02a37 !important;
+        }
+
+        /* 4. Color de Advertencia (Ámbar) */
+        .btn-warning {
+            background-color: #ffc107 !important;
+            border-color: #ffc107 !important;
+            color: #000 !important;
+        }
+        .btn-warning:hover {
+            background-color: #d39e00 !important;
+            border-color: #d39e00 !important;
+            color: #000 !important;
+        }
+        
+        /* 5. Color de Éxito (Verde más claro) */
+        .btn-success {
+            background-color: #198754 !important;
+            border-color: #198754 !important;
+        }
+        .btn-success:hover {
+            background-color: #146c43 !important;
+            border-color: #146c43 !important;
+        }
+
+        /* 6. Color de Información (Azul claro) */
+        .btn-info {
+            color: #000 !important;
+            background-color: #0dcaf0 !important;
+            border-color: #0dcaf0 !important;
+        }
+        .btn-info:hover {
+            color: #000 !important;
+            background-color: #31d2f2 !important;
+            border-color: #25cff2 !important;
+        }
+        /* --- FIN DE LA PALETA DE COLORES --- */
+    </style>
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{{ url_for('index') }}">Ganadería TYE</a>
+            <div class="collapse navbar-collapse">
+                <ul class="navbar-nav ms-auto">
+                    {% if session.user_id %}
+                        <li class="nav-item">
+                            <span class="navbar-text me-3">
+                                Hola, {{ session.username }} ({{ session.user_rol }})
+                            </span>
+                        </li>
+                        <li class="nav-item">
+                            <a class="btn btn-danger" href="{{ url_for('logout') }}">Cerrar Sesión</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category | replace('danger', 'warning') }} mt-3">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        {% block content %}{% endblock %}
+    </div>
+
+  </body>
+</html>

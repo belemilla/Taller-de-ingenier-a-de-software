@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Añadir Nuevo Animal{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card">
+            <div class="card-header"><h3 class="card-title text-center">Registrar Nuevo Animal</h3></div>
+            <div class="card-body">
+                <form method="post">
+                    <div class="mb-3">
+                        <label for="tipo" class="form-label">Tipo de Animal:</label>
+                        <select id="tipo" name="tipo" class="form-select" required>
+                            <option value="" disabled selected>Selecciona un tipo...</option>
+                            <option value="Vaca">Vaca</option>
+                            <option value="Cerdo">Cerdo</option>
+                            <option value="Chivo">Chivo</option>
+                            <option value="Cordero">Cordero</option>
+                            <option value="Pollo">Pollo</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="nombre" class="form-label">Nombre (opcional):</label>
+                        <input type="text" id="nombre" name="nombre" class="form-control" maxlength="100">
+                    </div>
+                    <div class="mb-3">
+                        <label for="estado" class="form-label">Estado:</label>
+                        <select id="estado" name="estado" class="form-select" required>
+                            <option value="En rebaño">En rebaño</option>
+                            <option value="En cuarentena">En cuarentena</option>
+                            <option value="Vendido">Vendido</option>
+                        </select>
+                    </div>
+                    <div class="d-grid"><button type="submit" class="btn btn-success btn-lg">Guardar Animal</button></div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

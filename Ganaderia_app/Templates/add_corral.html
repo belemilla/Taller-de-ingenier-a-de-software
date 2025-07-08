@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Añadir Corral{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header"><h3>Añadir Nuevo Corral</h3></div>
+            <div class="card-body">
+                <form method="post">
+                    <div class="mb-3">
+                        <label for="nombre" class="form-label">Nombre del Corral</label>
+                        <input type="text" name="nombre" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="capacidad" class="form-label">Capacidad (opcional)</label>
+                        <input type="number" name="capacidad" class="form-control">
+                    </div>
+                    <div class="mb-3">
+                        <label for="tipo_corral" class="form-label">Tipo (ej: Maternidad, Cuarentena)</label>
+                        <input type="text" name="tipo_corral" class="form-control">
+                    </div>
+                    <button type="submit" class="btn btn-success">Guardar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

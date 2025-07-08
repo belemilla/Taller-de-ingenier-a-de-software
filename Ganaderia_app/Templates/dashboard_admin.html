@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard Administrador{% endblock %}
+
+{% block content %}
+    <div class="px-4 py-5 my-5 text-center">
+        <h1 class="display-5 fw-bold">Dashboard del Administrador</h1>
+        <div class="col-lg-6 mx-auto">
+            <p class="lead mb-4">Bienvenido, <strong>{{ session.username }}</strong>. Desde aquí puedes gestionar el sistema.</p>
+            
+            <div class="d-grid gap-3 col-6 mx-auto">
+    <a href="{{ url_for('gestionar_animales') }}" class="btn btn-primary btn-lg">Gestionar Animales (CRUD)</a>
+    <a href="{{ url_for('gestionar_usuarios') }}" class="btn btn-secondary btn-lg">Gestionar Usuarios</a>
+    
+    <a href="{{ url_for('gestionar_corrales') }}" class="btn btn-secondary btn-lg">Gestionar Corrales</a>
+
+    <a href="{{ url_for('ver_reportes') }}" class="btn btn-secondary btn-lg">Ver Reportes de Conteos</a>
+    <a href="{{ url_for('gestionar_alertas') }}" class="btn btn-danger btn-lg">Gestionar Alertas Activas</a>
+</div>
+        </div>
+    </div>
+{% endblock %}
