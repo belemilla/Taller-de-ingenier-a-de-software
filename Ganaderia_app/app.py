@@ -12,6 +12,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = os.urandom(24) 
 db = SQLAlchemy(app)
 
+# Modelos existentes
 class Animal(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     codigo_unico = db.Column(db.String(20), unique=True, nullable=False)
@@ -54,12 +55,40 @@ class Tratamiento(db.Model):
     fecha_aplicacion = db.Column(db.Date, nullable=False)
     animal_id = db.Column(db.Integer, db.ForeignKey('animal.id'), nullable=False)
 
+# --- NUEVOS MODELOS ---
+class Proveedor(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    nombre = db.Column(db.String(100), nullable=False)
+    contacto = db.Column(db.String(100))
+    telefono = db.Column(db.String(20))
+    direccion = db.Column(db.String(200))
+
+class Alimento(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    nombre = db.Column(db.String(100), nullable=False)
+    descripcion = db.Column(db.Text)
+    stock_kg = db.Column(db.Float, nullable=False, default=0)
+
+class Potrero(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    nombre = db.Column(db.String(100), unique=True, nullable=False)
+    area_hectareas = db.Column(db.Float)
+    estado_pasto = db.Column(db.String(50)) # Ej: Bueno, Regular, Malo
+    ultimo_uso = db.Column(db.Date)
+
+class Equipamiento(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    nombre = db.Column(db.String(100), nullable=False)
+    estado = db.Column(db.String(50)) # Ej: Operativo, En mantenimiento, Roto
+    fecha_adquisicion = db.Column(db.Date)
+    proximo_mantenimiento = db.Column(db.Date)
+
+
 # --- RUTAS ---
 
-# RUTA PRINCIPAL CORREGIDA
+# Rutas de Autenticación y Dashboards
 @app.route('/')
 def index():
-    # La ruta principal ahora siempre muestra la página de bienvenida.
     return render_template('landing.html')
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -70,7 +99,6 @@ def login():
             session['user_id'] = user.id
             session['username'] = user.username
             session['user_rol'] = user.rol
-            # Después de un login exitoso, redirige al dashboard correspondiente
             if user.rol == 'Administrador':
                 return redirect(url_for('dashboard_admin'))
             else:
@@ -111,9 +139,10 @@ def dashboard_cuidador():
     if 'user_id' not in session or session['user_rol'] != 'Cuidador':
         flash('Por favor, inicia sesión para acceder a esta página.', 'warning')
         return redirect(url_for('login'))
-    return render_template('dashboard_cuidador.html')
+    ultimo_conteo = Conteo.query.filter_by(user_id=session['user_id']).order_by(Conteo.fecha_hora.desc()).first()
+    return render_template('dashboard_cuidador.html', ultimo_conteo=ultimo_conteo)
 
-# (Aquí van todas las demás rutas de la aplicación que ya hemos construido)
+# CRUD Animales
 @app.route('/gestionar_animales')
 def gestionar_animales():
     if 'user_id' not in session or session['user_rol'] != 'Administrador': return redirect(url_for('login'))
@@ -149,9 +178,10 @@ def delete_animal(animal_id):
     animal_a_borrar = Animal.query.get_or_404(animal_id)
     animal_a_borrar.estado = 'Inactivo'
     db.session.commit()
-    flash(f'El animal {animal_a_borrar.codigo_unico} ha sido borrado.', 'success')
+    flash(f'El animal {animal_a_borrar.codigo_unico} ha sido marcado como inactivo.', 'success')
     return redirect(url_for('gestionar_animales'))
 
+# Rutas de Conteos y Alertas
 @app.route('/iniciar_conteo')
 def iniciar_conteo():
     if 'user_id' not in session or session['user_rol'] != 'Cuidador':
@@ -181,6 +211,28 @@ def guardar_conteo():
     db.session.commit()
     return redirect(url_for('dashboard_cuidador'))
 
+@app.route('/ver_reportes')
+def ver_reportes():
+    if 'user_id' not in session or session['user_rol'] != 'Administrador': return redirect(url_for('login'))
+    conteos = Conteo.query.order_by(Conteo.fecha_hora.desc()).all()
+    return render_template('ver_reportes.html', conteos=conteos)
+
+@app.route('/gestionar_alertas')
+def gestionar_alertas():
+    if 'user_id' not in session or session['user_rol'] != 'Administrador': return redirect(url_for('login'))
+    alertas_activas = Alerta.query.filter_by(resuelta=False).order_by(Alerta.id.desc()).all()
+    return render_template('gestionar_alertas.html', alertas=alertas_activas)
+
+@app.route('/alerta/resolver/<int:alerta_id>')
+def resolver_alerta(alerta_id):
+    if 'user_id' not in session or session['user_rol'] != 'Administrador': return redirect(url_for('login'))
+    alerta_a_resolver = Alerta.query.get_or_404(alerta_id)
+    alerta_a_resolver.resuelta = True
+    db.session.commit()
+    flash(f'La alerta #{alerta_a_resolver.id} ha sido marcada como resuelta.', 'success')
+    return redirect(url_for('gestionar_alertas'))
+
+# CRUD Usuarios
 @app.route('/gestionar_usuarios')
 def gestionar_usuarios():
     if 'user_id' not in session or session['user_rol'] != 'Administrador': return redirect(url_for('login'))
@@ -210,27 +262,7 @@ def delete_user(user_id):
     flash(f'El usuario {user_a_borrar.username} ha sido borrado permanentemente.', 'success')
     return redirect(url_for('gestionar_usuarios'))
 
-@app.route('/ver_reportes')
-def ver_reportes():
-    if 'user_id' not in session or session['user_rol'] != 'Administrador': return redirect(url_for('login'))
-    conteos = Conteo.query.order_by(Conteo.fecha_hora.desc()).all()
-    return render_template('ver_reportes.html', conteos=conteos)
-
-@app.route('/gestionar_alertas')
-def gestionar_alertas():
-    if 'user_id' not in session or session['user_rol'] != 'Administrador': return redirect(url_for('login'))
-    alertas_activas = Alerta.query.filter_by(resuelta=False).order_by(Alerta.id.desc()).all()
-    return render_template('gestionar_alertas.html', alertas=alertas_activas)
-
-@app.route('/alerta/resolver/<int:alerta_id>')
-def resolver_alerta(alerta_id):
-    if 'user_id' not in session or session['user_rol'] != 'Administrador': return redirect(url_for('login'))
-    alerta_a_resolver = Alerta.query.get_or_404(alerta_id)
-    alerta_a_resolver.resuelta = True
-    db.session.commit()
-    flash(f'La alerta #{alerta_a_resolver.id} ha sido marcada como resuelta.', 'success')
-    return redirect(url_for('gestionar_alertas'))
-
+# CRUD Corrales
 @app.route('/gestionar_corrales')
 def gestionar_corrales():
     if 'user_id' not in session or session['user_rol'] != 'Administrador': return redirect(url_for('login'))
@@ -268,6 +300,7 @@ def delete_corral(corral_id):
     flash(f"Corral '{corral_a_borrar.nombre}' borrado permanentemente.", 'success')
     return redirect(url_for('gestionar_corrales'))
 
+# CRUD Tratamientos (Historial Médico)
 @app.route('/animal/<int:animal_id>/historial')
 def historial_medico(animal_id):
     if 'user_id' not in session or session['user_rol'] != 'Administrador': return redirect(url_for('login'))
@@ -311,6 +344,196 @@ def delete_tratamiento(tratamiento_id):
     db.session.commit()
     flash('Registro de tratamiento borrado permanentemente.', 'success')
     return redirect(url_for('historial_medico', animal_id=animal_id))
+
+# --- NUEVAS RUTAS CRUD ---
+
+# CRUD Proveedores
+@app.route('/gestionar_proveedores')
+def gestionar_proveedores():
+    if 'user_id' not in session or session['user_rol'] != 'Administrador': return redirect(url_for('login'))
+    proveedores = Proveedor.query.all()
+    return render_template('gestionar_proveedores.html', proveedores=proveedores)
+
+@app.route('/proveedor/add', methods=['GET', 'POST'])
+def add_proveedor():
+    if 'user_id' not in session or session['user_rol'] != 'Administrador': return redirect(url_for('login'))
+    if request.method == 'POST':
+        nuevo_proveedor = Proveedor(
+            nombre=request.form['nombre'],
+            contacto=request.form['contacto'],
+            telefono=request.form['telefono'],
+            direccion=request.form['direccion']
+        )
+        db.session.add(nuevo_proveedor)
+        db.session.commit()
+        flash('Proveedor añadido exitosamente.', 'success')
+        return redirect(url_for('gestionar_proveedores'))
+    return render_template('add_proveedor.html')
+
+@app.route('/proveedor/edit/<int:id>', methods=['GET', 'POST'])
+def edit_proveedor(id):
+    if 'user_id' not in session or session['user_rol'] != 'Administrador': return redirect(url_for('login'))
+    proveedor = Proveedor.query.get_or_404(id)
+    if request.method == 'POST':
+        proveedor.nombre = request.form['nombre']
+        proveedor.contacto = request.form['contacto']
+        proveedor.telefono = request.form['telefono']
+        proveedor.direccion = request.form['direccion']
+        db.session.commit()
+        flash('Proveedor actualizado exitosamente.', 'success')
+        return redirect(url_for('gestionar_proveedores'))
+    return render_template('edit_proveedor.html', proveedor=proveedor)
+
+@app.route('/proveedor/delete/<int:id>')
+def delete_proveedor(id):
+    if 'user_id' not in session or session['user_rol'] != 'Administrador': return redirect(url_for('login'))
+    proveedor = Proveedor.query.get_or_404(id)
+    db.session.delete(proveedor)
+    db.session.commit()
+    flash('Proveedor eliminado permanentemente.', 'success')
+    return redirect(url_for('gestionar_proveedores'))
+
+# CRUD Alimentos
+@app.route('/gestionar_alimentos')
+def gestionar_alimentos():
+    if 'user_id' not in session or session['user_rol'] != 'Administrador': return redirect(url_for('login'))
+    alimentos = Alimento.query.all()
+    return render_template('gestionar_alimentos.html', alimentos=alimentos)
+
+@app.route('/alimento/add', methods=['GET', 'POST'])
+def add_alimento():
+    if 'user_id' not in session or session['user_rol'] != 'Administrador': return redirect(url_for('login'))
+    if request.method == 'POST':
+        nuevo_alimento = Alimento(
+            nombre=request.form['nombre'],
+            descripcion=request.form['descripcion'],
+            stock_kg=float(request.form['stock_kg'])
+        )
+        db.session.add(nuevo_alimento)
+        db.session.commit()
+        flash('Alimento añadido al inventario.', 'success')
+        return redirect(url_for('gestionar_alimentos'))
+    return render_template('add_alimento.html')
+
+@app.route('/alimento/edit/<int:id>', methods=['GET', 'POST'])
+def edit_alimento(id):
+    if 'user_id' not in session or session['user_rol'] != 'Administrador': return redirect(url_for('login'))
+    alimento = Alimento.query.get_or_404(id)
+    if request.method == 'POST':
+        alimento.nombre = request.form['nombre']
+        alimento.descripcion = request.form['descripcion']
+        alimento.stock_kg = float(request.form['stock_kg'])
+        db.session.commit()
+        flash('Inventario de alimento actualizado.', 'success')
+        return redirect(url_for('gestionar_alimentos'))
+    return render_template('edit_alimento.html', alimento=alimento)
+
+@app.route('/alimento/delete/<int:id>')
+def delete_alimento(id):
+    if 'user_id' not in session or session['user_rol'] != 'Administrador': return redirect(url_for('login'))
+    alimento = Alimento.query.get_or_404(id)
+    db.session.delete(alimento)
+    db.session.commit()
+    flash('Alimento eliminado del inventario.', 'success')
+    return redirect(url_for('gestionar_alimentos'))
+
+# CRUD Potreros
+@app.route('/gestionar_potreros')
+def gestionar_potreros():
+    if 'user_id' not in session or session['user_rol'] != 'Administrador': return redirect(url_for('login'))
+    potreros = Potrero.query.all()
+    return render_template('gestionar_potreros.html', potreros=potreros)
+
+@app.route('/potrero/add', methods=['GET', 'POST'])
+def add_potrero():
+    if 'user_id' not in session or session['user_rol'] != 'Administrador': return redirect(url_for('login'))
+    if request.method == 'POST':
+        ultimo_uso = request.form['ultimo_uso']
+        nuevo_potrero = Potrero(
+            nombre=request.form['nombre'],
+            area_hectareas=float(request.form['area_hectareas']) if request.form['area_hectareas'] else None,
+            estado_pasto=request.form['estado_pasto'],
+            ultimo_uso=datetime.strptime(ultimo_uso, '%Y-%m-%d').date() if ultimo_uso else None
+        )
+        db.session.add(nuevo_potrero)
+        db.session.commit()
+        flash('Potrero añadido exitosamente.', 'success')
+        return redirect(url_for('gestionar_potreros'))
+    return render_template('add_potrero.html')
+
+@app.route('/potrero/edit/<int:id>', methods=['GET', 'POST'])
+def edit_potrero(id):
+    if 'user_id' not in session or session['user_rol'] != 'Administrador': return redirect(url_for('login'))
+    potrero = Potrero.query.get_or_404(id)
+    if request.method == 'POST':
+        potrero.nombre = request.form['nombre']
+        potrero.area_hectareas = float(request.form['area_hectareas']) if request.form['area_hectareas'] else None
+        potrero.estado_pasto = request.form['estado_pasto']
+        ultimo_uso = request.form['ultimo_uso']
+        potrero.ultimo_uso = datetime.strptime(ultimo_uso, '%Y-%m-%d').date() if ultimo_uso else None
+        db.session.commit()
+        flash('Potrero actualizado exitosamente.', 'success')
+        return redirect(url_for('gestionar_potreros'))
+    return render_template('edit_potrero.html', potrero=potrero)
+
+@app.route('/potrero/delete/<int:id>')
+def delete_potrero(id):
+    if 'user_id' not in session or session['user_rol'] != 'Administrador': return redirect(url_for('login'))
+    potrero = Potrero.query.get_or_404(id)
+    db.session.delete(potrero)
+    db.session.commit()
+    flash('Potrero eliminado permanentemente.', 'success')
+    return redirect(url_for('gestionar_potreros'))
+
+# CRUD Equipamiento
+@app.route('/gestionar_equipamiento')
+def gestionar_equipamiento():
+    if 'user_id' not in session or session['user_rol'] != 'Administrador': return redirect(url_for('login'))
+    equipos = Equipamiento.query.all()
+    return render_template('gestionar_equipamiento.html', equipos=equipos)
+
+@app.route('/equipamiento/add', methods=['GET', 'POST'])
+def add_equipamiento():
+    if 'user_id' not in session or session['user_rol'] != 'Administrador': return redirect(url_for('login'))
+    if request.method == 'POST':
+        fecha_adquisicion = request.form['fecha_adquisicion']
+        proximo_mantenimiento = request.form['proximo_mantenimiento']
+        nuevo_equipo = Equipamiento(
+            nombre=request.form['nombre'],
+            estado=request.form['estado'],
+            fecha_adquisicion=datetime.strptime(fecha_adquisicion, '%Y-%m-%d').date() if fecha_adquisicion else None,
+            proximo_mantenimiento=datetime.strptime(proximo_mantenimiento, '%Y-%m-%d').date() if proximo_mantenimiento else None
+        )
+        db.session.add(nuevo_equipo)
+        db.session.commit()
+        flash('Equipo añadido exitosamente.', 'success')
+        return redirect(url_for('gestionar_equipamiento'))
+    return render_template('add_equipamiento.html')
+
+@app.route('/equipamiento/edit/<int:id>', methods=['GET', 'POST'])
+def edit_equipamiento(id):
+    if 'user_id' not in session or session['user_rol'] != 'Administrador': return redirect(url_for('login'))
+    equipo = Equipamiento.query.get_or_404(id)
+    if request.method == 'POST':
+        equipo.nombre = request.form['nombre']
+        equipo.estado = request.form['estado']
+        fecha_adquisicion = request.form['fecha_adquisicion']
+        proximo_mantenimiento = request.form['proximo_mantenimiento']
+        equipo.fecha_adquisicion = datetime.strptime(fecha_adquisicion, '%Y-%m-%d').date() if fecha_adquisicion else None
+        equipo.proximo_mantenimiento = datetime.strptime(proximo_mantenimiento, '%Y-%m-%d').date() if proximo_mantenimiento else None
+        db.session.commit()
+        flash('Equipo actualizado exitosamente.', 'success')
+        return redirect(url_for('gestionar_equipamiento'))
+    return render_template('edit_equipamiento.html', equipo=equipo)
+
+@app.route('/equipamiento/delete/<int:id>')
+def delete_equipamiento(id):
+    if 'user_id' not in session or session['user_rol'] != 'Administrador': return redirect(url_for('login'))
+    equipo = Equipamiento.query.get_or_404(id)
+    db.session.delete(equipo)
+    db.session.commit()
+    flash('Equipo eliminado permanentemente.', 'success')
+    return redirect(url_for('gestionar_equipamiento'))
 
 if __name__ == '__main__':
     with app.app_context():
