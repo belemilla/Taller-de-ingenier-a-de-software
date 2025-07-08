@@ -24,7 +24,7 @@
                 <tbody>
                     {% for conteo in conteos %}
                         <tr class="{{ 'table-danger' if conteo.alerta else '' }}">
-                            <td>{{ conteo.fecha_hora.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                            <td>{{ conteo.fecha_hora.strftime('%d-%m-%Y %H:%M:%S') }}</td>
                             <td>{{ conteo.cuidador.username }}</td>
                             <td>{{ conteo.animales_esperados }}</td>
                             <td>{{ conteo.animales_contados }}</td>
